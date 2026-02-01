@@ -43,6 +43,12 @@ def run_backtest(
         dict with backtest results
     """
     # Align data
+    # Handle multi-level columns
+    if isinstance(index_data.columns, pd.MultiIndex):
+        index_data.columns = index_data.columns.get_level_values(0)
+    if isinstance(etf_data.columns, pd.MultiIndex):
+        etf_data.columns = etf_data.columns.get_level_values(0)
+    
     combined = pd.DataFrame({
         'index_close': index_data['Close'],
         'etf_close': etf_data['Close']

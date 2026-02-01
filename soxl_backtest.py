@@ -9,8 +9,12 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from soxl_strategy import MA_LONG, MA_SHORT, ROC_PERIOD, ROC_THRESHOLD
 
+# Strategy parameters
+MA_LONG = 200
+MA_SHORT = 50
+ROC_PERIOD = 20
+ROC_THRESHOLD = 0.02
 
 TICKER_INDEX = "^SOX"
 TICKER_LONG = "SOXL"
@@ -24,6 +28,11 @@ def fetch_data(ticker: str, start: str = "2015-01-01", end: str = None) -> pd.Da
     
     print(f"Fetching {ticker} data from {start} to {end}...")
     data = yf.download(ticker, start=start, end=end, progress=False)
+    
+    # Handle multi-level columns from yfinance
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+    
     return data
 
 
@@ -42,11 +51,19 @@ def run_backtest(
     - SHORT: Price < 200 MA, Price < 50 MA, ROC < -threshold
     - CASH: Otherwise
     """
-    # Prepare data
-    df = pd.DataFrame({'index_close': index_data['Close']})
-    df['long_close'] = long_etf_data['Close']
+    # Prepare data - extract Close prices as Series
+    idx_close = index_data['Close'].copy()
+    long_close = long_etf_data['Close'].copy()
+    
+    # Create aligned DataFrame
+    df = pd.DataFrame({
+        'index_close': idx_close,
+        'long_close': long_close
+    })
+    
     if short_etf_data is not None and use_shorts:
-        df['short_close'] = short_etf_data['Close']
+        short_close = short_etf_data['Close'].copy()
+        df['short_close'] = short_close
     
     df = df.dropna()
     
