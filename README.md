@@ -1,6 +1,8 @@
-# TQQQ Trend Following Strategy
+# Leveraged ETF Trend Strategies
 
-A simple, automated trend-following strategy based on the 250-day moving average crossover.
+Automated trend-following strategies for leveraged ETFs:
+- **TQQQ/SQQQ** - 3x NASDAQ (250-day MA crossover)
+- **SOXL/SOXS** - 3x Semiconductors (Dual MA + Momentum)
 
 **Inspired by:** Malik's $700K automated trading strategy (MaletTQQQ on Kinfo)
 
@@ -61,6 +63,42 @@ python trade.py --paper
 - `backtest.py` - Historical backtesting with performance metrics
 - `trade.py` - Live/paper trading with Alpaca integration
 - `config.py` - Configuration settings
+
+---
+
+## SOXL/SOXS Semiconductor Strategy
+
+Semiconductors are more volatile and cyclical than NASDAQ. This strategy adds momentum confirmation.
+
+### Rules
+
+| Condition | Action |
+|-----------|--------|
+| SOX > 200 MA **AND** SOX > 50 MA **AND** ROC > 2% | Hold SOXL |
+| SOX < 200 MA **AND** SOX < 50 MA **AND** ROC < -2% | Hold SOXS (or cash) |
+| Otherwise | Cash (avoid chop) |
+
+### Why Different from TQQQ?
+
+- **Dual MA filter:** 200 + 50 day MAs to avoid false signals in volatile markets
+- **Momentum confirmation:** 20-day rate of change must exceed ±2%
+- **Dynamic sizing:** Position size adjusts based on trend strength and volatility
+
+### Usage
+
+```bash
+# Check current signal
+python soxl_strategy.py
+
+# Run backtest (compares long-only vs long-short)
+python soxl_backtest.py
+```
+
+### Key Insight
+
+> Semiconductors often **lead** NASDAQ at turning points. When SOX diverges from NDX, pay attention!
+
+---
 
 ## Disclaimer
 
